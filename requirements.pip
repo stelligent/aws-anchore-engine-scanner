@@ -1,0 +1,7 @@
+PyYAML
+awscli
+boto3
+botocore
+troposphere
+docker
+awacs

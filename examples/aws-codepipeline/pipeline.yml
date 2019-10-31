@@ -1,0 +1,262 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Deploys Pipeline for testing Anchore Engine
+
+Parameters:
+
+  Environment:
+    Type: String
+  GitHubAccountName:
+    Description: "Enter a GitHub account name for Source stage"
+    Type: String
+  GitHubRepoName:
+    Description: "Enter a GitHub repository name for Source stage"
+    Type: String
+  GitHubBranchName:
+    Type: String
+  GitWebHookToken:
+    Description: "Enter a valid secret token for GitHub webhook"
+    Type: String
+    NoEcho: true
+  BucketName:
+    Description: "Enter a bucket name to store built artifacts"
+    Type: String
+
+Resources:
+
+  Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+
+  CodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    DependsOn: Bucket
+    DependsOn: CodePipelineRolePolicies
+    Properties:
+      Name: !Sub ${AWS::StackName}-Pipeline
+      RoleArn: !GetAtt CodePipelineTrustRole.Arn
+      Stages:
+        - Name: Source
+          Actions:
+            - InputArtifacts: []
+              Name: Source
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Version: '1'
+                Provider: GitHub
+              OutputArtifacts:
+                - Name: SourceApp
+              Configuration:
+                Owner: !Ref GitHubAccountName
+                Repo: !Ref GitHubRepoName
+                PollForSourceChanges: true
+                Branch: !Ref GitHubBranchName
+                OAuthToken: !Ref GitWebHookToken
+              RunOrder: 1
+        - Name: Test
+          Actions:
+            - Name: ScanImages
+              InputArtifacts:
+                -
+                  Name: SourceApp
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: '1'
+                Provider: CodeBuild
+              Configuration:
+                ProjectName:
+                  Ref: CodeBuildPreDeploy
+      ArtifactStore:
+        Type: S3
+        Location: !Ref Bucket
+
+  CodeBuildPreDeploy:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${AWS::StackName}-CodeBuildPreDeploy
+      ServiceRole: !GetAtt RoleCodeBuild.Arn
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: buildspec.yml
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:2.0
+        Type: LINUX_CONTAINER
+        PrivilegedMode: true
+        EnvironmentVariables:
+          - Name: ANCHORE_CLI_USER
+            Value: admin
+          - Name: ANCHORE_CLI_PASS
+            Value: foobar
+          - Name: ANCHORE_CLI_URL
+            Value: !Join
+              - ''
+              - - http://
+                - !ImportValue DEMO-DNS-NAME
+                - :8228/v1
+          - Name: ANCHORE_SCAN_POLICY
+            Value: 'true'
+          - Name: AWS_DEFAULT_REGION
+            Value: !Sub ${AWS::Region}
+          - Name: ACCOUNT_ID
+            Value: !Sub ${AWS::AccountId}
+      Artifacts:
+        Type: CODEPIPELINE
+      VpcConfig:
+        VpcId: !ImportValue DEMO-VPCID
+        Subnets:
+          - !ImportValue DEMO-PRIVATE-SUBNET-1
+          - !ImportValue DEMO-PRIVATE-SUBNET-2
+        SecurityGroupIds:
+          - !GetAtt SecurityGroup.GroupId
+
+  CodePipelineTrustRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Sid: trustcodepipeline
+            Effect: Allow
+            Principal:
+              Service:
+                - codepipeline.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+
+  CodePipelineRolePolicies:
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: F4
+            reason: This is a demo
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: LambdaPipeline
+      PolicyDocument:
+        Statement:
+        -
+          Action:
+            - s3:*
+          Resource:
+            - '*'
+          Effect: Allow
+        -
+          Action:
+            - codebuild:*
+          Resource:
+            - !GetAtt CodeBuildPreDeploy.Arn
+          Effect: Allow
+        -
+          Effect: Allow
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+          Resource:
+            - '*'
+      Roles:
+        - Ref: CodePipelineTrustRole
+
+  RoleCodeBuild:
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: F3
+            reason: This is a demo
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - codebuild.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        -
+          PolicyName: !Sub ${AWS::StackName}-CodeBuild-Policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              -
+                Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - '*'
+              -
+                Effect: Allow
+                Action:
+                  - s3:*
+                Resource:
+                  - '*'
+              -
+                Effect: Allow
+                Action:
+                  - cloudformation:ValidateTemplate
+                  - cloudformation:ListExports
+                  # Allow to run in VPC
+                  - ec2:CreateNetworkInterface
+                  - ec2:DetachNetworkInterface
+                  - ec2:CreateNetworkInterfacePermission
+                  - ec2:DeleteNetworkInterfacePermission
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:DescribeNetworkInterfaceAttribute
+                  - ec2:ResetNetworkInterfaceAttribute
+                  - ec2:ModifyNetworkInterfaceAttribute
+                  - ec2:DeleteNetworkInterface
+                  - ec2:AttachNetworkInterface
+                  - ec2:DescribeSecurityGroups
+                  - ec2:DescribeDhcpOptions
+                  - ec2:DescribeSubnets
+                  - ec2:DescribeVpcs
+                  - ec2:CreateNetworkInterfacePermission
+                Resource: '*'
+              -
+                Effect: Allow
+                Action:
+                  - ecr:BatchGetImage
+                  - ecr:CompleteLayerUpload
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:CreateRepository
+                  - ecr:DescribeRepositories
+                  - ecr:GetAuthorizationToken
+                  - ecr:GetRepositoryPolicy
+                  - ecr:GetDownloadUrlForLayer 
+                  - ecr:InitiateLayerUpload
+                  - ecr:ListImage
+                  - ecr:PutImage
+                  - ecr:SetRepositoryPolicy
+                  - ecr:UploadLayerPart
+                Resource:
+                  - '*'
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Test Anchore Engine CodePipeline SG
+      GroupName: test-anchore-engine-pipeline
+      SecurityGroupEgress:
+        -
+          CidrIp: 0.0.0.0/0
+          Description: Allow All Outbound Traffic
+          FromPort: -1
+          IpProtocol: '-1'
+          ToPort: -1
+      SecurityGroupIngress:
+        - FromPort: -1
+          IpProtocol: '-1'
+          SourceSecurityGroupId: !ImportValue
+            Fn::Sub: ${Environment}-AppSecurityGroup
+          ToPort: -1
+      VpcId: !ImportValue DEMO-VPCID

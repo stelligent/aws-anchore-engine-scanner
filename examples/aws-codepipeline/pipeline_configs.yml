@@ -1,0 +1,13 @@
+---
+# Example CodePipeline
+- region: us-east-2
+  resource_name: ANCHORE-CLI-PIPELINE
+  template_file: examples/aws-codepipeline/pipeline.yml
+  parameters:
+    Environment: DEMO
+    GitHubAccountName: <replace-with-your-github-account-name>
+    GitHubRepoName: <replace-with-your-github-application-repository>
+    GitHubBranchName: <your-target-branch> (i.e master)
+    GitWebHookToken: ${GITHUB_TOKEN}
+    BucketName: 'demo-anchore-engine-pipeline-store'
+

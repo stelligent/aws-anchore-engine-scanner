@@ -1,0 +1,8 @@
+-r requirements.pip
+pylint
+pytest
+pytest-cov
+cfn-lint
+bandit
+requests
+anchorecli

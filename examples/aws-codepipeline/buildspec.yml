@@ -1,0 +1,56 @@
+# Test Anchore Engine scanning functionality within a pipeline stage
+version: 0.2
+
+env:
+  variables:
+    TAG: latest
+    STAGE_REPO_NAME: tested/nginx
+    TESTED_SAMPLE_IMAGE: ${ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${STAGE_REPO_NAME}
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.7
+      docker: 18
+    commands:
+      - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2&
+      - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
+      - echo Entering the install phase..... 
+      - apt-get update -y
+      - apt-get -y install python-pip -y
+      - pip3 install awscli --upgrade --user
+      - pip install boto3
+      - pip install anchorecli
+
+  pre_build:
+    commands:
+      - echo Image repository setup started on `date`
+      - echo ECR Setup...
+      - echo Logging into AWS ECR...
+      - $(aws ecr get-login --no-include-email --region ${AWS_DEFAULT_REGION})
+      - echo Configure Anchore Client...
+      - export ANCHORE_CLI_PASS=foobar
+      - export ANCHORE_CLI_USER=admin
+
+  build:
+    commands:
+      - echo Deployment started on `date`
+      - echo Testing...
+      - anchore-cli --version
+      - anchore-cli --debug system status
+      - anchore-cli --debug image add postgres:9
+      - echo 'Waiting for image to finish analysis'
+      - anchore-cli image wait postgres:9
+      - echo 'Analysis complete'
+      - anchore-cli image vuln postgres:9 os
+      - if [ '${ANCHORE_SCAN_POLICY}' = 'true' ] ; then anchore-cli evaluate check postgres:9  ; fi
+      - echo Build started on `date`
+      - echo Building Tested Sample Image... 
+      - docker build -t ${STAGE_REPO_NAME} .
+
+  post_build:
+    commands:
+      - echo "Tag image to Docker Hub"
+      - docker tag ${STAGE_REPO_NAME}:${TAG} ${ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${STAGE_REPO_NAME}:${TAG}
+      - echo "Pushing image to Docker Hub"
+      - docker push ${ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${STAGE_REPO_NAME}:${TAG}

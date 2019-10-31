@@ -1,0 +1,48 @@
+---
+# VPC
+- region: us-east-2
+  resource_name: ANCHORE-VPC
+  template_file: anchore_vpc.yml
+  parameters:
+    Environment: DEMO
+    VPCCIDRBlock: 10.0.0.0/16
+    PublicSubnet1CIDRBlock: 10.0.0.0/24
+    PrivateSubnet1CIDRBlock: 10.0.1.0/24
+    PublicSubnet2CIDRBlock: 10.0.2.0/24
+    PrivateSubnet2CIDRBlock: 10.0.3.0/24
+
+# ALB
+- region: us-east-2
+  resource_name: ANCHORE-ALB
+  template_file: anchore_alb.yml
+  parameters:
+    Environment: DEMO
+    Subnet1: PUBLIC-SUBNET-1
+    Subnet2: PUBLIC-SUBNET-2
+    VpcId: VPCID
+    CIDRBLK: 10.0.0.0/8
+
+# EC2
+- region: us-east-2
+  resource_name: ANCHORE-EC2-INSTANCE
+  template_file: anchore_ec2_cluster.yml
+  parameters:
+    Environment: DEMO
+    AmiId: ami-0653e888ec96eab9b
+    ClusterSize: '2'
+    InstanceType: m4.large
+    KeypairName: anchore_demo
+    CIDRBLK: 10.0.0.0/8
+    OpenCIDR: 0.0.0.0/0
+
+# ECS
+- region: us-east-2
+  resource_name: ANCHORE-ECS
+  template_file: anchore_ecs.yml
+  parameters:
+    Environment: DEMO
+    TargetGroup: TARGETGROUP-ARN
+    AnchoreEngineImage: anchore-engine-Image
+    ArchoreDatabaseImage: 'postgres:9'
+    PGDATA: '/var/lib/postgresql/data/pgdata/'
+    AnchoreDBPassword: mypgpassword

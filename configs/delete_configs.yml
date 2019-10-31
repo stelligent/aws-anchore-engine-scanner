@@ -1,0 +1,43 @@
+---
+# Example CodePipeline
+- region: us-east-2
+  resource_name: ANCHORE-CLI-PIPELINE
+  template_file: examples/aws-codepipeline/pipeline.yml
+  parameters:
+    Environment: DEMO
+
+# ECS
+- region: us-east-2
+  resource_name: ANCHORE-ECS
+  template_file: anchore_ecs.yml
+  parameters:
+    Environment: DEMO
+
+# EC2
+- region: us-east-2
+  resource_name: ANCHORE-EC2-INSTANCE
+  template_file: anchore_ec2_instance.yml
+  parameters:
+    Environment: DEMO
+
+# ECR
+- region: us-east-2
+  resource_name: ANCHORE-ECR
+  template_file: anchore_ecr.yml
+  parameters:
+    Environment: DEMO
+
+# ALB
+- region: us-east-2
+  resource_name: ANCHORE-ALB
+  template_file: anchore_alb.yml
+  parameters:
+    Environment: DEMO
+
+# VPC
+- region: us-east-2
+  resource_name: ANCHORE-VPC
+  template_file: anchore_vpc.yml
+  parameters:
+    Environment: DEMO
+    
