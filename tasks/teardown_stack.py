@@ -31,6 +31,13 @@ def main(configs):
             stack_name = environment+'-'+resource_name
             print(f'Stack name to be deleted = {stack_name}')
 
+        # Delete non-empty bucket objects
+            if stack_name == 'DEMO-ANCHORE-CLI-PIPELINE':
+                bucket_name = single_setup_data['parameters']['BucketName']
+                print(f'Bucket to delete objects = {bucket_name}')
+                os.system(f"aws s3 rm s3://{bucket_name} --recursive")
+                print(f'Bucket - {bucket_name} object removed')
+
         # Delete Stacks
             stacks = cfn.DeploymentManager(single_setup_data) # pylint: disable=no-member
             stacks.delete_stack(stack_name)

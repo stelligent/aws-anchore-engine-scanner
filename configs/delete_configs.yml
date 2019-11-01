@@ -5,6 +5,7 @@
   template_file: examples/aws-codepipeline/pipeline.yml
   parameters:
     Environment: DEMO
+    BucketName: demo-anchore-engine-pipeline-store
 
 # ECS
 - region: us-east-2

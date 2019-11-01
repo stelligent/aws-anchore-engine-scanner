@@ -10,6 +10,7 @@ export AWS_DEFAULT_REGION=$(REGION)
 
 TAG=1.0
 IMAGE=demo/anchore-engine
+TEST_IMAGE=tested/nginx
 DOCKERFILE_PATH=anchore/anchore-engine/
 
 default: all
@@ -123,15 +124,15 @@ push-image:
 		aws-anchore-engine:prod \
 		python app_image.py
 
-# 	@echo "=== Pushing local image to remote registry... ==="
-# 	chmod +x tasks/scripts/push_image.sh
-# 	bash tasks/scripts/push_image.sh \
-# 		$(IMAGE) \
-# 		$(DOCKERFILE_PATH) \
-# 		$(ACCOUNT_ID) \
-# 		$(TAG) \
-# 		$(AWS_DEFAULT_REGION)
-# 	@echo "===== Image Pushed to ECR Complete!!!! ====="
+	@echo "=== Pushing local image to remote registry... ==="
+	chmod +x tasks/scripts/push_image.sh
+	bash tasks/scripts/push_image.sh \
+		$(IMAGE) \
+		$(DOCKERFILE_PATH) \
+		$(ACCOUNT_ID) \
+		$(TAG) \
+		$(AWS_DEFAULT_REGION)
+	@echo "===== Image Pushed to ECR Complete!!!! ====="
 
 # deploy cloudformation stacks
 deploy-stacks:
@@ -172,7 +173,7 @@ teardown:
 		-v $(PWD):/src \
 		-w /src \
 		aws-anchore-engine:prod \
-		aws ecr delete-repository --repository-name $(IMAGE) --force
+		aws ecr delete-repository --repository-name $(TEST_IMAGE) --force
 
 	docker run -it --rm \
 		-e AWS_PROFILE \
@@ -186,6 +187,17 @@ teardown:
 		python tasks/teardown_stack.py
 
 	bash rm -rf anchore_demo.pem
+
+	docker run -it --rm \
+		-e AWS_PROFILE \
+		-e AWS_DEFAULT_REGION \
+		-e AWS_ACCESS_KEY_ID \
+		-e AWS_SECRET_ACCESS_KEY \
+		-e AWS_SESSION_TOKEN \
+		-v $(PWD):/src \
+		-w /src \
+		aws-anchore-engine:prod \
+		aws ecr delete-repository --repository-name $(IMAGE) --force
 
 all: build-test test build deploy test-e2e
 

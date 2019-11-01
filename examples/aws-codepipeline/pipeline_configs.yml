@@ -9,5 +9,5 @@
     GitHubRepoName: <replace-with-your-github-application-repository>
     GitHubBranchName: <your-target-branch> (i.e master)
     GitWebHookToken: ${GITHUB_TOKEN}
-    BucketName: 'demo-anchore-engine-pipeline-store'
+    BucketName: demo-anchore-engine-pipeline-store
 
