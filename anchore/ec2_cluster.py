@@ -84,12 +84,6 @@ class EC2ClusterTemplate():
         )
         self.cfn_template.add_parameter(
             Parameter(
-                "KeypairName",
-                Type="String",
-            )
-        )
-        self.cfn_template.add_parameter(
-            Parameter(
                 "CIDRBLK",
                 Type="String",
             )
@@ -255,7 +249,6 @@ class EC2ClusterTemplate():
                 IamInstanceProfile=Ref(constants.INST_PROFILE),
                 ImageId=Ref('AmiId'),
                 InstanceType=Ref('InstanceType'),
-                KeyName=Ref('KeypairName'),
                 SecurityGroups=[
                     Ref(constants.SSH_SG),
                     ImportValue(Sub('${Environment}-AppSecurityGroup')),

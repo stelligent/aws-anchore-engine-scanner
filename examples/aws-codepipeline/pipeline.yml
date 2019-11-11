@@ -15,7 +15,7 @@ Parameters:
     Type: String
   GitWebHookToken:
     Description: "Enter a valid secret token for GitHub webhook"
-    Type: String
+    Type: AWS::SSM::Parameter::Value<String>
     NoEcho: true
   BucketName:
     Description: "Enter a bucket name to store built artifacts"

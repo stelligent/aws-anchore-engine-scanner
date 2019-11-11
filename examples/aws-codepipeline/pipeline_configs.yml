@@ -8,6 +8,6 @@
     GitHubAccountName: <replace-with-your-github-account-name>
     GitHubRepoName: <replace-with-your-github-application-repository>
     GitHubBranchName: <your-target-branch> (i.e master)
-    GitWebHookToken: ${GITHUB_TOKEN}
+    GitWebHookToken: <your-stored-ssm-parameter-token-name> (i.e /demo/github/token)
     BucketName: demo-anchore-engine-pipeline-store
 

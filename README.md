@@ -1,6 +1,6 @@
 # aws-anchore-engine-scanner
 
-This guide details steps and procedures you can follow to create, launch and implement your own standalone container scanning solution within AWS ecosystem.  This approach uses an opensource container scanning tool called [Anchore Engine](https://anchore.com/) as a proof-of-concept and provides examples of how Anchore integrates with your favorite CI/CD systems orchestration platforms [Note: There are several other open-source container scanning solutions available that can achieve same goal. See [link](https://opensource.com/article/18/8/tools-container-security) for details]. Anchore is a container compliance platform that ensures security and stability of container deployments. This solution utilizes a data-driven approach to analyze and conduct policy enforcement to achieve container static analysis and policy-based compliance that automates the inspection, analysis, and evaluation of images against user-defined checks for high confidence in container deployments by ensuring workload content meets the required criteria. Each scan process provides a policy evaluation result for each image: pass/fail against custom defined policies by the user.
+This guide details steps and procedures you can follow to create, launch and implement your own standalone container scanning solution within AWS ecosystem.  This approach uses an opensource container scanning tool called [Anchore Engine](https://anchore.com/) as a proof-of-concept and provides examples of how Anchore integrates with your favorite CI/CD systems orchestration platforms..
 
 For more detailed understanding of concepts and overview on Anchore Engine, visit [anchore overview](https://docs.anchore.com/current/docs/overview/)
 
@@ -8,13 +8,12 @@ For more detailed understanding of concepts and overview on Anchore Engine, visi
 
 Here’s how to install Anchore Engine on AWS. The below diagram shows the high-level architecture of Anchore Engine.
 
-![Anchore-Engine High-Level Architecture](https://github.com/stelligent/aws-anchore-engine-scanner/blob/master/docs/aws-anchore-engine.png)
+![Anchore-Engine High-Level Architecture](https://github.com/stelligent/aws-anchore-engine-scanner/blob/master/docs/aws-anchore-engine.jpg)
 
-Anchore Engine is deployed as an AWS ECS service with the EC2 launch type in this use-case behind an Application Load Balancer. The anchore-engine and anchore-database containers are deployed into private subnets behind the Application Load Balancer that is hosted in the public subnets. The private subnets must have a route to the internet using the NAT gateway, as Anchore Engine fetches the latest vulnerabilities from publicly available online sources.  Anchore Engine overall architecture comprises of a 3-Tier services and features: API, State and Worker Tiers. The Engine API is the primary API for the entire system, the Engine State Management handles the catalog, simple-queue and policy-engine services, and the Engine Workers does all the image download and analysis heavy-lifting. The Anchore Engine Database provides an intermediate storage medium between each services using a single PostgreSQL database with a default public schema namespace.
 
 ## Getting Started
 
-This application comprises of several steps that must be executed as specified. Before running any commands review the [prerequisites](#Prerequisites) section to ensure you have required packages and installed needed software.
+Before running any commands review the [prerequisites](#Prerequisites) section to ensure you have required packages and installed needed software.
 
 ### Prerequisites
 
@@ -24,7 +23,7 @@ Ensure that the following are installed or configured on your workstation before
 - Git
 - AWS CLI
 - [Make](https://www.gnu.org/software/make/manual/html_node/index.html#Top)
-- Github Personal Token for your repository
+- Github Personal Token (Stored as an ssm parameter)
 
 ### Installation
 
@@ -32,7 +31,7 @@ Clone this [github repository](https://github.com/stelligent/aws-anchore-engine-
 
 #### Setup Credentials
 
-If you have MFA configure with your AWS account, you can setup your credentials using [hashicorp vault](https://github.com/hashicorp/vault) or run the following commands and provide appropriate parameters to each environment variables. Else, configure your AWS session on your workstation as described in [Configuring the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html).
+If you have MFA configure with your AWS account, run the following commands and provide appropriate parameters to each environment variables. Else, configure your AWS session on your workstation as described in [Configuring the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html).
 
 ```make
 make get-cred \
@@ -64,7 +63,7 @@ Build your deployment environment with docker.
 make build
 ```
 
-This build your local dockerized image for deploying and launching Anchore-Engine. It installs various packages as defined within the `Dockerfile` and python packages listed within the `requirements.pip` file. Using Docker ensures the environment requirements needed to successfully deploy this application persist across different environments.
+This build your local dockerized image for deploying and launching Anchore-Engine. It installs various packages as defined within the `Dockerfile` and python packages listed within the `requirements.pip` file.
 
 #### Setup test environment
 
@@ -101,7 +100,7 @@ This deployment comprises of the various AWS resources:
     - Task Definitions
  6. AWS CodePipeline
 
-The application launches Anchore-Engine on AWS and set up AWS CodePipeline for automatic image vulnerability scan and detection. To achieve this, deploy resources in the following order:
+The application launches Anchore-Engine and sets up CodePipeline for automatic image vulnerability scan and detection.
 
 #### Build the Anchore-Engine Docker Image
 
@@ -111,32 +110,15 @@ First, create an Amazon Elastic Container Registry repository to host your Ancho
 make push-image ACCOUNT_ID=your-aws-account-id
 ```
 
-This commands utilizes `app_image.py` python module to create a CloudFormation template for AWS ECR repository and launches an AWS ECR stack to be used as registry for anchore-engine docker image and a Stage repository for tested image scanned by Anchore-Engine (A separate ECR repository to stage your scanned and tested images could be created and targeted as part of your build pipeline). A configuration template is used during the stack deployment as specified within the `YAML` snippet below. This runs `push_image.sh` script that uses a Dockerfile to build a local image of an anchore-engine, tags the image and pushes built anchore-engine image to the above ECR registry to be used by AWS ECS task definition during application creation.
-
-```yaml
----
-# ECR
-- region: us-east-2
-  resource_name: ANCHORE-ECR
-  template_file: anchore_ecr.yml
-  parameters:
-    Environment: DEMO
-    AppRepoName: anchore-engine
-    TestImageRepoName: tested/nginx
-    ImageTag: '1.0'
-```
-
 #### Deploy Anchore-Engine Server
 
-To launch your Anchore-Engine server, ensure that the anchore-engine image has been built and pushed to AWS ECR before deploying Anchore-Engine AWS ECS service. The following command utilizes `index.py` python module as entrypoint to create CloudFormation templates using [troposphere](https://github.com/cloudtools/troposphere/tree/master/troposphere) template generator and launches all stacks for each of these AWS resources: VPC, ALB, EC2, and ECS using [Python SDK boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html) API calls.
+The following command utilizes `index.py` python module as entrypoint to create CloudFormation templates using [troposphere](https://github.com/cloudtools/troposphere/tree/master/troposphere) template generator and launches all stacks for each of these AWS resources: VPC, ALB, EC2, and ECS.
 
 Run this make command
 
 ```make
 make deploy-stacks
 ```
-
-> Note: This command also creates an EC2 Instance key-pair for launching and authenticating through an ssh session locally, if needed. Also, you can access your launched EC2 instance through AWS System Manager - session manager for troubleshooting purposes.
 
 Each of these stack parameters are extracted from an accompanying configuration `YAML` templates within the `configs` folder. These `YAML` templates provides each CloudFormation stack's parameters at the point of deployment as shown below.
 
@@ -217,7 +199,6 @@ This command utilizes `pipeline.py` python module to launch a CloudfFormation st
     GitHubAccountName: replace-with-your-github-account-name
     GitHubRepoName: replace-with-your-github-application-repository
     GitHubBranchName: your-target-branch (i.e master)
-    GitWebHookToken: ${GITHUB_TOKEN}
     BucketName: 'demo-anchore-engine-pipeline-store'
     AnchoreEngineDomain: replace-with-your-hosted-zone-domain (i.e demo.anchore-engine.com)
 
@@ -285,8 +266,6 @@ phases:
       - docker push ${ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${STAGE_REPO_NAME}:${TAG}
 
 ```
-
-> Note: Before running this commands ensure to create and provide a Github personal token and saved as `TOKEN = 'paste-your-generate-token-here'` within a `github_token.py` file within your deployment parent directory.
 
 The pipeline is triggered after the AWS CloudFormation stack creation is complete. You can log in to AWS Management Console to monitor the status of the pipeline. The vulenrability scan information is avaialble both within the CodeBuild online terminal or CloudWatch Logs and a JSON formatted result can be extracted for further analysis.
 

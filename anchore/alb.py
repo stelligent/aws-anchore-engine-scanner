@@ -148,8 +148,8 @@ class ALBTemplate():
             SecurityGroupIngress=[
                 SecurityGroupRule(
                     IpProtocol='tcp',
-                    FromPort=int('80'),
-                    ToPort=int('80'),
+                    FromPort=int('8228'),
+                    ToPort=int('8228'),
                     CidrIp=Ref('CIDRBLK'),
                 ),
                 SecurityGroupRule(

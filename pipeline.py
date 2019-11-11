@@ -16,5 +16,4 @@ def main():
     return anchore_engine
 
 if __name__ == '__main__':
-    os.environ['GITHUB_TOKEN'] = token.TOKEN
     main()

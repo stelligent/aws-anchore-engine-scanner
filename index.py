@@ -17,8 +17,6 @@ def main():
     anchore_engine.create_alb_template()
     anchore_engine.create_ecs_template()
     anchore_engine.create_ec2_cluster_template()
-    anchore_engine.create_route53_recordset()
-    anchore_engine.deploy_keypair(KEYNAME)
     anchore_engine.deploy_all(CONFIGS)
     return anchore_engine
 

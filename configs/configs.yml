@@ -31,7 +31,6 @@
     AmiId: ami-0653e888ec96eab9b
     ClusterSize: '2'
     InstanceType: m4.large
-    KeypairName: anchore_demo
     CIDRBLK: 10.0.0.0/8
     OpenCIDR: 0.0.0.0/0
 

@@ -8,7 +8,6 @@ from anchore.vpc import VPCTemplate
 from anchore.alb import ALBTemplate
 from anchore.ecs import ECSTemplate
 from anchore.ecr import ECRTemplate
-from anchore.recordset import RecordSetTemplate
 from anchore.ec2_cluster import EC2ClusterTemplate
 import anchore.constants as constants
 from tasks.deploy_stacks import deploy_stack
@@ -27,7 +26,6 @@ class AnchoreEngine():
         self.ecs_template = ECSTemplate()
         self.ecr_template = ECRTemplate()
         self.ec2_template = EC2ClusterTemplate()
-        self.recordset = RecordSetTemplate()
 
     def write_file(self, filename, template):
         '''
