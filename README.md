@@ -1,6 +1,6 @@
 # aws-anchore-engine-scanner
 
-This guide details steps and procedures you can follow to create, launch and implement your own standalone container scanning solution within AWS ecosystem.  This approach uses an opensource container scanning tool called [Anchore Engine](https://anchore.com/) as a proof-of-concept and provides examples of how Anchore integrates with your favorite CI/CD systems orchestration platforms..
+This guide details steps and procedures you can follow to create, launch and implement your own standalone container scanning solution within AWS ecosystem.  This approach uses an opensource container scanning tool called [Anchore Engine](https://anchore.com/) as a proof-of-concept and provides examples of how Anchore integrates with your favorite CI/CD systems orchestration platforms.
 
 For more detailed understanding of concepts and overview on Anchore Engine, visit [anchore overview](https://docs.anchore.com/current/docs/overview/)
 
@@ -8,7 +8,7 @@ For more detailed understanding of concepts and overview on Anchore Engine, visi
 
 Here’s how to install Anchore Engine on AWS. The below diagram shows the high-level architecture of Anchore Engine.
 
-![Anchore-Engine High-Level Architecture](https://github.com/stelligent/aws-anchore-engine-scanner/blob/master/docs/aws-anchore-engine.jpg)
+![Anchore-Engine High-Level Architecture](https://github.com/stelligent/aws-anchore-engine-scanner/blob/master/docs/AWS%20anchore%20engine.jpg)
 
 
 ## Getting Started
