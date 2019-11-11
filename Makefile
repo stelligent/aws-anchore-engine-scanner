@@ -186,8 +186,6 @@ teardown:
 		aws-anchore-engine:prod \
 		python tasks/teardown_stack.py
 
-	bash rm -rf anchore_demo.pem
-
 	docker run -it --rm \
 		-e AWS_PROFILE \
 		-e AWS_DEFAULT_REGION \

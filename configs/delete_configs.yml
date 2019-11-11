@@ -21,13 +21,6 @@
   parameters:
     Environment: DEMO
 
-# ECR
-- region: us-east-2
-  resource_name: ANCHORE-ECR
-  template_file: anchore_ecr.yml
-  parameters:
-    Environment: DEMO
-
 # ALB
 - region: us-east-2
   resource_name: ANCHORE-ALB
