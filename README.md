@@ -200,7 +200,6 @@ This command utilizes `pipeline.py` python module to launch a CloudfFormation st
     GitHubRepoName: replace-with-your-github-application-repository
     GitHubBranchName: your-target-branch (i.e master)
     BucketName: 'demo-anchore-engine-pipeline-store'
-    AnchoreEngineDomain: replace-with-your-hosted-zone-domain (i.e demo.anchore-engine.com)
 
 ```
 
