@@ -2,10 +2,8 @@
 Create Anchore-Engine cloudformation templates
 and Launches all stacks for Anchore-Engine
 '''
-import tasks.github_token as token
 from anchore.main import AnchoreEngine
 
-KEYNAME = 'anchore_demo'
 CONFIGS = 'configs/configs.yml'
 
 def main():

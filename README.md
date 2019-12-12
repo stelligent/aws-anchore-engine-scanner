@@ -35,11 +35,11 @@ If you have MFA configure with your AWS account, run the following commands and 
 
 ```make
 make get-cred \
-    ACCOUNT_ID=your-aws-account-id \
-    USERNAME=your-aws-username \
-    PROFILE=your-aws-profile \
-    REGION=aws-target-region \
-    TOKEN=auth-generated-token
+    ACCOUNT_ID=<your-aws-account-id> \
+    USERNAME=<your-aws-username> \
+    PROFILE=<your-aws-profile> \
+    REGION=<aws-target-region> \
+    TOKEN=<auth-generated-token>
 
 ```
 
@@ -107,7 +107,7 @@ The application launches Anchore-Engine and sets up CodePipeline for automatic i
 First, create an Amazon Elastic Container Registry repository to host your Anchore Engine Docker image. Then, build the anchore-engine image on your workstation and push it to the ECR repository. This can be achieved by running the following make command.
 
 ```make
-make push-image ACCOUNT_ID=your-aws-account-id
+make push-image ACCOUNT_ID=<your-aws-account-id>
 ```
 
 #### Deploy Anchore-Engine Server
@@ -196,10 +196,10 @@ This command utilizes `pipeline.py` python module to launch a CloudfFormation st
   template_file: examples/aws-codepipeline/pipeline.yml
   parameters:
     Environment: DEMO
-    GitHubAccountName: replace-with-your-github-account-name
-    GitHubRepoName: replace-with-your-github-application-repository
-    GitHubBranchName: your-target-branch (i.e master)
-    BucketName: 'demo-anchore-engine-pipeline-store'
+    GitHubAccountName: <replace-with-your-github-account-name>
+    GitHubRepoName: <replace-with-your-github-application-repository>
+    GitHubBranchName: <your-target-branch> (i.e master)
+    BucketName: <demo-anchore-engine-pipeline-store>
 
 ```
 
@@ -273,7 +273,7 @@ The pipeline is triggered after the AWS CloudFormation stack creation is complet
 Run the following commands to deploy all above mentioned resources needed for Anchore Engine.
 
 ```make
-make deploy ACCOUNT_ID=your-aws-account-id
+make deploy ACCOUNT_ID=<your-aws-account-id>
 ```
 
 This command combines all three above mentioned deployment and launches all resources with a click of a single command, provided all requirements are met as stated in [requirements](#Prerequisites).
@@ -299,7 +299,7 @@ This runs unit tests, linting and security checks for each of the deployments.
 #### Linting
 
 ```make
-make test-linitng
+make test-lint
 ```
 
 Runs Pylint on every module created within this deployments.
@@ -310,7 +310,7 @@ Runs Pylint on every module created within this deployments.
 make test-validate
 ```
 
-This executes clouformation template linting uisng `cfn-lint`, security scan using `cfn-nag`, and template validation using `cfn boto3 calls`.
+This executes clouformation template linting uisng [`cfn-lint`](https://pypi.org/project/cfn-lint/), security scan using [`cfn-nag`](https://github.com/stelligent/cfn_nag), and template validation using [`cfn boto3 calls`](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/cloudformation.html).
 
 #### Security Tests
 
@@ -318,7 +318,7 @@ This executes clouformation template linting uisng `cfn-lint`, security scan usi
 make test-security
 ```
 
-Executes security linting of all python scripts and methods within your deployments files using a security tool - `bandit`.
+Executes security linting of all python scripts and methods within your deployments files using a security tool - [`bandit`](https://pypi.org/project/bandit/).
 
 #### Unit Tests
 

@@ -1,8 +1,6 @@
 '''
 Launches AWS CodePipeline stack
 '''
-import os
-import tasks.github_token as token
 from anchore.main import AnchoreEngine
 
 PIPELINE_CONFIGS = 'examples/aws-codepipeline/pipeline_configs.yml'
