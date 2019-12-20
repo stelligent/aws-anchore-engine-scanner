@@ -212,6 +212,7 @@ version: 0.2
 env:
   variables:
     TAG: latest
+    SOURCE_IMAGE: nginx:latest
     STAGE_REPO_NAME: tested/nginx
     TESTED_SAMPLE_IMAGE: ${ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${STAGE_REPO_NAME}
 
@@ -246,13 +247,12 @@ phases:
       - echo Testing...
       - anchore-cli --version
       - anchore-cli --debug system status
-      - anchore-cli policy add user-policy/bundle.json
-      - anchore-cli --debug image add postgres:9
+      - anchore-cli --debug image add ${SOURCE_IMAGE}
       - echo 'Waiting for image to finish analysis'
-      - anchore-cli image wait postgres:9
+      - anchore-cli image wait ${SOURCE_IMAGE}
       - echo 'Analysis complete'
-      - anchore-cli image vuln postgres:9 os
-      - if [ '${ANCHORE_SCAN_POLICY}' = 'true' ] ; then anchore-cli evaluate check postgres:9 --detail ; fi
+      - anchore-cli image vuln ${SOURCE_IMAGE} os
+      - if [ '${ANCHORE_SCAN_POLICY}' = 'true' ] ; then anchore-cli evaluate check ${SOURCE_IMAGE}  ; fi
       - echo Build started on `date`
       - echo Building Tested Sample Image... 
       - docker build -t ${STAGE_REPO_NAME} .
