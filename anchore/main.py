@@ -195,20 +195,6 @@ class AnchoreEngine():
         self.write_file(constants.ECS_TEMPLATE, ecs_template_file)
         return True
 
-    def create_route53_recordset(self):
-        '''
-        ROUTE53 Recordset Template
-        '''
-        # Create Anchore Engine Domain name
-        self.recordset.add_descriptions("Anchore Engine Route 53 RecordSet")
-        self.recordset.add_version(self.version)
-        self.recordset.add_parameters()
-        recordset_template_file = self.recordset.add_recordset()
-
-        # write template file to directory
-        self.write_file(constants.RECORDSET_TEMPLATE, recordset_template_file)
-        return True
-
     def deploy_keypair(self, keyname):
         '''
         Create EC2 key pair
