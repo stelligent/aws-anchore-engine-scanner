@@ -184,7 +184,7 @@ teardown:
 		-v $(PWD):/src \
 		-w /src \
 		aws-anchore-engine:prod \
-		python tasks/teardown_stack.py
+		python tasks/teardown_stack.py 'configs/delete_configs.yml'
 
 	docker run -it --rm \
 		-e AWS_PROFILE \
@@ -196,6 +196,17 @@ teardown:
 		-w /src \
 		aws-anchore-engine:prod \
 		aws ecr delete-repository --repository-name $(IMAGE) --force
+
+	docker run -it --rm \
+		-e AWS_PROFILE \
+		-e AWS_DEFAULT_REGION \
+		-e AWS_ACCESS_KEY_ID \
+		-e AWS_SECRET_ACCESS_KEY \
+		-e AWS_SESSION_TOKEN \
+		-v $(PWD):/src \
+		-w /src \
+		aws-anchore-engine:prod \
+		python tasks/teardown_stack.py configs/ecr_configs.yml
 
 all: build-test test build deploy test-e2e
 

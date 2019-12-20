@@ -2,6 +2,7 @@
 Clean-up deployed aws resources
 '''
 import os
+import sys
 import traceback
 import cloudformation as cfn
 import keypair
@@ -55,4 +56,4 @@ def main(configs):
     return "Teardown Complete!!!"
 
 if __name__ == "__main__":
-    main('configs/delete_configs.yml')
+    main(f'{sys.argv[1]}')
