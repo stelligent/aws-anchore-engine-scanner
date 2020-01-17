@@ -199,6 +199,7 @@ This command utilizes `pipeline.py` python module to launch a CloudfFormation st
     GitHubAccountName: <replace-with-your-github-account-name>
     GitHubRepoName: <replace-with-your-github-application-repository>
     GitHubBranchName: <your-target-branch> (i.e master)
+    GitWebHookToken: <your-stored-ssm-parameter-token-name> (i.e /demo/github/token)
     BucketName: <demo-anchore-engine-pipeline-store>
 
 ```

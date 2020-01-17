@@ -35,6 +35,6 @@ FROM stage as test
 WORKDIR /src
 COPY . /src
 RUN pip install -r requirements-test.pip
-RUN gem install --no-rdoc --no-ri json
-RUN gem install --no-rdoc --no-ri cfn-nag
+RUN gem install --no-document json
+RUN gem install --no-document cfn-nag
 CMD ["/bin/bash"]
